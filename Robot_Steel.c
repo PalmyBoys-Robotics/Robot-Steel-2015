@@ -165,8 +165,6 @@ task autonomous()
 
 	//dont hog CPU
 	wait1Msec(30);
-
-	AutonomousCodePlaceholderForTesting();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -226,7 +224,5 @@ task usercontrol()
 		else { motor[feed] = 0; }
 		
 		wait1Msec(15);
-
-		UserControlCodePlaceholderForTesting();
 	}
 }
