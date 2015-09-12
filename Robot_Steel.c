@@ -8,24 +8,6 @@
 
 #pragma platform(VEX)
 
-/*
-task: initalizeflywheel resets the input values to the defaults set below.
-task: flywheelRamp runs InitializeFlywheel then ramps flywheel ramp up with defined variable
-Uses inbuilt while(true) loop, so dont used in while(true) loops unless triggered :P
-task: flyWheelTerminate sets the value of motors to 0, does not disable
-task: TankDriveMovement is a tank running during intervals for controlling the tank drive system
-void: RunFeed runs the feed on the robot
-
-Btn5U: Startup ramp switch
-Btn5D: Stop flywheelRamp/flywheel
-Btn8U && Btn8D: Toggle flywheel Speed up and down.
-Btn8R: Increase Right flywheel motor speed by 5 and decrease left by 5
-Btn8L: Decrease Right flywheel motor speed by 5 and increase left by 5
-Btn6U: Feed Forward (reverse)
-Btn6D: Feed Backwards (forward)
-*/
-
-
 //Competition Control and Duration Settings
 #pragma competitionControl(Competition)
 
@@ -35,6 +17,7 @@ Btn6D: Feed Backwards (forward)
 //motorOFF const
 const int MotorOFF = 0;
 
+//flywheel automatic speed control
 bool manualFlyWheelSpeedControl = false;
 
 //Flywheel Definitions
@@ -207,11 +190,11 @@ task usercontrol()
 		
 		//unlimited sideways flywheel ajustment Right
 		if(vexRT[Btn8R] == 1 && flywheelRampActiveL == true && flywheelRampActiveR == true)
-			{ speedVariableR = speedVariableR + 5; speedVariableL = speedVariableL - 5; }
+			{ speedVariableR = speedVariableR + 5; speedVariableL = speedVariableL - 5; manualFlyWheelSpeedControl = true;}
 		
 		//unlimited sideways flywheel ajustment Left
 		if(vexRT[Btn8L] == 1 && flywheelRampActiveL == true && flywheelRampActiveR == true)
-			{ speedVariableR = speedVariableR - 5; speedVariableL = speedVariableL + 5; }
+			{ speedVariableR = speedVariableR - 5; speedVariableL = speedVariableL + 5; manualFlyWheelSpeedControl = true;}
 	
 		//reset motorspeed to max
 		if(vexRT[Btn7D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true))
