@@ -1,5 +1,8 @@
 # Robot-Steel
-This contains the source code of the PNBHS 2903 2015 Robot Steel. The source code is based on a task system and will recieve many revisional updates throughout the season. The Tasks and functions are as follows:
+This contains the source code of the PNBHS 2903 2015 Robot Steel. The source code is based on a task system and will recieve many revisional updates throughout the season. 
+
+
+The Tasks and functions are as follows:
 
 task: initalizeflywheel resets the input values to the defaults set below.
 
@@ -12,6 +15,7 @@ task: flyWheelTerminate sets the value of motors to 0, does not disable.
 task: TankDriveMovement is a tank running during intervals for controlling the tank drive system.
 
 void: RunFeed runs the feed on the robot.
+
 
 And the button mappings are:
 
