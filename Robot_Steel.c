@@ -189,39 +189,39 @@ task usercontrol()
 		// Could also add current ajustment!
 		
 		//Toggle FlywheelSpeed Up (will be reloaded by initalize)
-		if(vexRT[Btn8U] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 0)
-			{	kNumbOfAttempts ++; speedVariableL = 51; speedVariableR = 51;	manualFlyWheelSpeedControl = true;}
-		else if(vexRT[Btn8U] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 1)
-			{	kNumbOfAttempts ++; speedVariableL = 85; speedVariableR = 85;	manualFlyWheelSpeedControl = true;}
-		else if(vexRT[Btn8U] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 2)
-			{	kNumbOfAttempts ++; speedVariableL = 100; speedVariableR = 100;	manualFlyWheelSpeedControl = true;}
-		else if(vexRT[Btn8U] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 3)
-			{	kNumbOfAttempts = 0; speedVariableL = 127; speedVariableR = 127;	manualFlyWheelSpeedControl = true;}
+	//	if(vexRT[Btn8U] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 0)
+	//		{	kNumbOfAttempts ++; speedVariableL = 51; speedVariableR = 51;	manualFlyWheelSpeedControl = true;}
+	//	else if(vexRT[Btn8U] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 1)
+	//		{	kNumbOfAttempts ++; speedVariableL = 85; speedVariableR = 85;	manualFlyWheelSpeedControl = true;}
+	//	else if(vexRT[Btn8U] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 2)
+	//		{	kNumbOfAttempts ++; speedVariableL = 100; speedVariableR = 100;	manualFlyWheelSpeedControl = true;}
+	//	else if(vexRT[Btn8U] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 3)
+	//		{	kNumbOfAttempts = 0; speedVariableL = 127; speedVariableR = 127;	manualFlyWheelSpeedControl = true;}
 		
 		//Toggle FlywheelSpeed Down (will be reloaded by initalize)
-		if(vexRT[Btn8D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 0)
-			{	kNumbOfAttempts = 3; speedVariableL = 51; speedVariableR = 51; manualFlyWheelSpeedControl = true;}
-		else if(vexRT[Btn8D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 1)
-			{ kNumbOfAttempts --; speedVariableL = 85; speedVariableR = 85; manualFlyWheelSpeedControl = true;}
-		else if(vexRT[Btn8D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 2)
-			{	kNumbOfAttempts --; speedVariableL = 100; speedVariableR = 100; manualFlyWheelSpeedControl = true;}
-		else if(vexRT[Btn8D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 3)
-			{ kNumbOfAttempts --; speedVariableL = 127; speedVariableR = 127; manualFlyWheelSpeedControl = true;}
-		
-		// Now this code will ajust the speed of the flywheels in either direction for ever!
-		
-		//unlimited sideways flywheel ajustment Right
-		if(vexRT[Btn8R] == 1 && flywheelRampActiveL == true && flywheelRampActiveR == true)
-			{ speedVariableR = speedVariableR + 5; speedVariableL = speedVariableL - 5; manualFlyWheelSpeedControl = true;}
-		
-		//unlimited sideways flywheel ajustment Left
-		if(vexRT[Btn8L] == 1 && flywheelRampActiveL == true && flywheelRampActiveR == true)
-			{ speedVariableR = speedVariableR - 5; speedVariableL = speedVariableL + 5; manualFlyWheelSpeedControl = true;}
-	
-		//this is a non initilazion quick motorspeed reset
-		//reset motorspeed to max
-		if(vexRT[Btn7D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true))
-			{	speedVariableL = MaxSpeedL; speedVariableR = MaxSpeedR;	kNumbOfAttempts = 0;}
+	//	if(vexRT[Btn8D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 0)
+	//		{	kNumbOfAttempts = 3; speedVariableL = 51; speedVariableR = 51; manualFlyWheelSpeedControl = true;}
+	//	else if(vexRT[Btn8D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 1)
+	//		{ kNumbOfAttempts --; speedVariableL = 85; speedVariableR = 85; manualFlyWheelSpeedControl = true;}
+	//	else if(vexRT[Btn8D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 2)
+	//		{	kNumbOfAttempts --; speedVariableL = 100; speedVariableR = 100; manualFlyWheelSpeedControl = true;}
+	//	else if(vexRT[Btn8D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 3)
+	//		{ kNumbOfAttempts --; speedVariableL = 127; speedVariableR = 127; manualFlyWheelSpeedControl = true;}
+	//	
+	//	// Now this code will ajust the speed of the flywheels in either direction for ever!
+	//	
+	//	//unlimited sideways flywheel ajustment Right
+	//	if(vexRT[Btn8R] == 1 && flywheelRampActiveL == true && flywheelRampActiveR == true)
+	//		{ speedVariableR = speedVariableR + 5; speedVariableL = speedVariableL - 5; manualFlyWheelSpeedControl = true;}
+	//	
+	//	//unlimited sideways flywheel ajustment Left
+	//	if(vexRT[Btn8L] == 1 && flywheelRampActiveL == true && flywheelRampActiveR == true)
+	//		{ speedVariableR = speedVariableR - 5; speedVariableL = speedVariableL + 5; manualFlyWheelSpeedControl = true;}
+	//
+	//	//this is a non initilazion quick motorspeed reset
+	//	//reset motorspeed to max
+	//	if(vexRT[Btn7D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true))
+	//		{	speedVariableL = MaxSpeedL; speedVariableR = MaxSpeedR;	kNumbOfAttempts = 0;}
 		
 		//condesned feed
 		if(vexRT[Btn6U] == 1) { motor[feed] = 127; }
