@@ -183,6 +183,8 @@ task usercontrol()
 			stopTask(flywheelRamp);
 		}
 		
+		// @warning UNFINISHED CODE, does not appear to work
+		
 		// The Two 'paragraphs' of code below are based of the idea of a toggle, the reason I did this is 
 		// I wanted to be able to move between several different states instead of simply incrasing or decreasing
 		// the speed of the flywheels. When encoders are intergrated this code will have to be ajusted.
