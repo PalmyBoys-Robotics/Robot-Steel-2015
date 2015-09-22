@@ -2,7 +2,6 @@
 
 // @about initalizes gyro
 // @from NifftyFunctionLib
-bool GyroInitalizeFinished = false;
 void InitalizeGyro(int portIndex)
 	{
 		SensorType[ portIndex ] = sensorNone;
@@ -10,7 +9,6 @@ void InitalizeGyro(int portIndex)
 		SensorType[ portIndex ] = sensorGyro;
 
 		writeDebugStream("Gyro Initalized");
-		GyroInitalizeFinished = true;
 	}
 
 // @about Checks if Gyro has been Initalized
