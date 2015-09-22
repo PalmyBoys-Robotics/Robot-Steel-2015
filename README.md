@@ -32,3 +32,6 @@ Btn8L: Decrease Right flywheel motor speed by 5 and increase left by 5.
 Btn6U: Feed Forward (actual reverse).
 
 Btn6D: Feed Backwards (actual forward).
+
+#CPS Chart
+![Alt text](http://i.imgur.com/4m4KZDI.png)
