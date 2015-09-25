@@ -48,6 +48,12 @@ const int IncremntRateL = 5;
 //int used in ToggleFlywheelSpeed up & down as simple way of creating a toggle button
 int kNumbOfAttempts;
 
+// @about Runs Feed ast specified speed
+void RunFeed(int speed)
+{
+	motor[feed] = -speed;
+}
+
 // @about returns true if a value is above 127
 // @from NifftyFucntionLib
 // @extraInfo We are only using variables in range 0-127
@@ -81,46 +87,43 @@ void InitializeFlywheelVariables()
 task flywheelRamp
 {
 
-	//makes sure all flywheel values are default before starting
-	InitializeFlywheelVariables();
-
-	while(true)
+	if(vexRT[Btn5U] == 1)
 	{
+		//makes sure all flywheel values are default before starting
+		InitializeFlywheelVariables();
+	
+		while(true)
+		{
+	
+			//incremnt motor speed
+			if(speedVariableR < MaxSpeedR && manualFlyWheelSpeedControl == false) { speedVariableR = speedVariableR + IncremntRateR; }
+			if(speedVariableL < MaxSpeedL && manualFlyWheelSpeedControl == false) { speedVariableL = speedVariableL + IncremntRateL; }
+	
+			//Right Side Flywheel
+			motor[rightf1] = speedVariableR;
+			motor[rightf2] = speedVariableR;
 
-		//incremnt motor speed
-		if(speedVariableR < MaxSpeedR && manualFlyWheelSpeedControl == false) { speedVariableR = speedVariableR + IncremntRateR; }
-		if(speedVariableL < MaxSpeedL && manualFlyWheelSpeedControl == false) { speedVariableL = speedVariableL + IncremntRateL; }
+			//Left Side FLywheel
+			motor[leftf2] = speedVariableL;
+			motor[leftf1] = speedVariableL;
 
-		//Right Side Flywheel
-		motor[rightf1] = speedVariableR;
-		motor[rightf2] = speedVariableR;
-
-		//Left Side FLywheel
-		motor[leftf2] = speedVariableL;
-		motor[leftf1] = speedVariableL;
-
-		if(AboveVexMotorMax(speedVariableR) == true) { speedVariableR = 127; writeDebugStream("Motor Flywheel int = above vexMotorMax, *reset to 127"); }
-		if(AboveVexMotorMax(speedVariableL) == true) { speedVariableL = 127; writeDebugStream("Motor Flywheel int = above vexMotorMax, *reset to 127"); }
-
-		// @ToD0 Figure out a better way of doing this :P
-		// @Warning only works on first run, no way to set it to false if task end
-		// if(speedVariableR == 50) { flywheelRampActiveR = true; }
-		// if(speedVariableL == 50) { flywheelRampActiveL = true; }
+			//resets value if above 127 or below -127
+			if(AboveVexMotorMax(speedVariableR) == true) 
+			{ 
+			speedVariableR = 127; 
+			writeDebugStream("Motor Flywheel int = above vexMotorMax, *reset to 127"); 
+			}
+			
+			if(AboveVexMotorMax(speedVariableL) == true) 
+			{ 
+			speedVariableL = 127;
+			writeDebugStream("Motor Flywheel int = above vexMotorMax, *reset to 127");
+			}
 
 		//dont hog cpu
 		wait1Msec(75);
 	}
 }
-
-// @about used to terminate flywheel
-// @deprecated function, kept incase needed
-//void flyWheelTerminate()
-//{
-//	motor[rightf2] = vexMotorOff;
-//	motor[rightf1] = vexMotorOff;
-//	motor[leftf2] = vexMotorOff;
-//	motor[leftf1] = vexMotorOff;
-//}
 
 // @about task to run in background that termiantes the flywheel!
 
@@ -162,10 +165,31 @@ task ArcadeDriveMovement
 	}
 }
 
-// @about Runs Feed ast specified speed
-void RunFeed(int speed)
+task feedIntakeControl
 {
-	motor[feed] = -speed;
+	while(true)
+	{
+	
+		// @about Simple intake
+		// @extraInfo uses a state machine.
+		//Btn 6U is Forward			//Btn 6D is Backward
+		IntakeControl = (vexRT[Btn6U] << 1) + vexRT[Btn6D];
+
+		switch( IntakeControl )
+		{
+		case 	1: 			// Btn 6U Pressed
+			RunFeed(127);		//feed forward
+			break;
+		case 2: 			// Btn 6D pressed
+			RunFeed(-127);		//feed backwards
+			break;
+		default: //else
+			RunFeed(0);		//feed stop
+			break;
+		}
+		
+		wait1Msec(15);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -230,42 +254,16 @@ void StopMotor(int index)
 
 	void pre_auton()
 	{
-
-		if(nImmediateBatteryLevel > 6800)
-		{
-			MaxSpeedL = 67;
-			MaxSpeedR = 67;
-		}
-		else if(nImmediateBatteryLevel < 6800 && nImmediateBatteryLevel > 6400)
-		{
-			MaxSpeedL = 80;
-			MaxSpeedR = 80;
-		}
-		else if(nImmediateBatteryLevel < 6400)
-		{
-			MaxSpeedL = 100;
-			MaxSpeedR = 100;
-		}
+		// Insert LCD Drive selection here
 
 		bStopTasksBetweenModes = true;
 	}
-	///////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
 	task autonomous()
 	{
 		startTask(flywheelRamp);
 
-		while(true)
-		{
-			//if the motors are at full speed, start the feed.
-			if(speedVariableL <= 80 && speedVariableR <= 80)
-			{
-				wait1Msec(3000);
-				RunFeed(127);
-			}
-
-			//dont hog CPU
-			wait1Msec(30);
-		}
+		//encoder feed code here
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -273,38 +271,8 @@ task usercontrol()
 	{
 
 		startTask(TankDriveMovement);
-
-		while (true)
-		{
-
-			bool DriveToggleButtonPressed = false;
-			//if you want arcade use 7U, YAY :)
-			if((vexRT(btn7U) == 1) && DriveToggleButtonPressed == false) { stopTask(TankDriveMovement); startTask(ArcadeDriveMovement); DriveToggleButtonPressed = true; }
-			if((vexRT(btn7U) == 1) && DriveToggleButtonPressed == true) { stopTask(ArcadeDriveMovement); startTask(TankDriveMovement); DriveToggleButtonPressed = false; }
-
-			//Start the ramp up flywheel
-			if(vexRT[Btn5U] == 1) { startTask(flywheelRamp, 100); }
-
-			startTask(FlyTerminateTerminateSwitch);
-			
-			//// @about Simple intake
-			//// @extraInfo uses a state machine.
-			//Btn 6U is Forward			//Btn 6D is Backward
-			IntakeControl = (vexRT[Btn6U] << 1) + vexRT[Btn6D];
-
-			switch( IntakeControl )
-			{
-			case 	1: 	// Btn 6U Pressed
-				RunFeed(127);		//feed forward
-				break;
-			case 2: 	// Btn 6D pressed
-				RunFeed(-127);	//feed backwards
-				break;
-			default: //else
-				RunFeed(0);			//feed stop
-				break;
-			}
-
-			wait1Msec(15);
-		}
-}
+		startTask(FlyTerminateTerminateSwitch);
+		startTask(flywheelRamp, 100);
+		startTask(feedIntakeControl);
+		
+	}
