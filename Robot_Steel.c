@@ -18,40 +18,61 @@
 #define vexMotorMax 127
 #define vexMotorMin -127
 
-//flywheel automatic speed control
-bool manualFlyWheelSpeedControl = false;
+// The Gear Ratio to one of your flywheel (set to 1 for no scaling) e.g. 27 would be 27:1
+#define FlyGearRatio 27
 
-//usage in switch statement for intake/feed
+// The wait time for calculating flywheel speed (50-250 msecs)
+int waitTime = 250;
+
+// The Int that holds the state of the feed switch statement
 int IntakeControl;
 
-//Flywheel Definitions
-//defined in initalizefLyWheel Task
-
+// The variable that holds the flywheels current speed
 int speedVariableR;
 int speedVariableL;
 
+// The highest speed you want the flywheel to go
 int MaxSpeedR = 70;
 int MaxSpeedL = 70;
 
-#define StartSpeedR 0
-#define StartSpeedL 0
+// The Start Speed of the flywheel
+const int StartSpeedR 0
+const int StartSpeedL 0
 
-// 1 will take 30 * 127 (maxspeed / IncremntRate)
-// = 3800ish milisecs
-//i.e. set higher to ramp up faster!
-const int IncremntRateR = 5;
-const int IncremntRateL = 5;
-
-//bool flywheelRampActiveR;
-//bool flywheelRampActiveL;
-
-//int used in ToggleFlywheelSpeed up & down as simple way of creating a toggle button
-int kNumbOfAttempts;
+// The amout that the motor speed is increased each loop
+const int IncremntRateR = 1;
+const int IncremntRateL = 1;
 
 // @about Runs Feed ast specified speed
 void RunFeed(int speed)
 {
 	motor[feed] = -speed;
+}
+
+// @about gets the current RPM of the flywheel (scaled with gear ratio)
+int getFlyRPML()
+{
+	float startCountL = SensorValue(leftEncoder);
+
+	wait1Msec(waitTime);
+
+	float EndCountL = SensorValue(leftEncoder);
+
+	float speedL = ((EndCountR - startCountR) / waitTime) * 60 * FlyGearRatio;
+	return speedL;
+}
+
+// @about gets the current RPM of the flywheel (scaled with gear ratio)
+int getFlyRPMR()
+{
+	float startCountR = SensorValue(rightEncoder);
+
+	wait1Msec(waitTime);
+		
+	float EndCountR = SensorValue(rightEncoder);
+
+	float speedR = ((EndCountL - startCountL) / waitTime) * 60 * FlyGearRatio;
+	return speedR;
 }
 
 // @about returns true if a value is above 127
@@ -70,17 +91,12 @@ bool AboveVexMotorMax(int intIndex)
 //Reset flywheel variables
 void InitializeFlywheelVariables()
 {
-	//reset to automatic mode
-	manualFlyWheelSpeedControl = false;
-
 	//The Starting speed of the flywheels
 	speedVariableR = StartSpeedR;
 	speedVariableL = StartSpeedL;
 
 	kNumbOfAttempts = 0;
 }
-
-//Flywheel Definitions End
 
 // @about Flywheel ramp from startSpeed to MaxSpeed
 // @from written for Steel originally, but transfered to NifftyFlywheelLib.c
