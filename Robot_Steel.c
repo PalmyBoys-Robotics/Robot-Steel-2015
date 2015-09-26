@@ -1,235 +1,90 @@
+#pragma config(Sensor, dgtl1,  rightEncoder,   sensorQuadEncoder)
+#pragma config(Sensor, dgtl3,  leftEncoder,    sensorQuadEncoder)
 #pragma config(Motor,  port1,           rightd,        tmotorVex393_HBridge, openLoop, reversed)
 #pragma config(Motor,  port2,           leftd,         tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port4,           leftf1,        tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port5,           leftf2,        tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port6,           rightf1,       tmotorVex393_MC29, openLoop, reversed)
 #pragma config(Motor,  port7,           rightf2,       tmotorVex393_MC29, openLoop, reversed)
-#pragma config(Motor,  port8,           feed,          tmotorServoContinuousRotation, openLoop)
+#pragma config(Motor,  port8,           loader,          tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port9,           intake,          tmotorVex393_MC29, openLoop)
 
 #pragma platform(VEX)
-
-//Competition Control and Duration Settings
 #pragma competitionControl(Competition)
 
-// #include "SmartMotorLib.c" 					//Smart Motor Library By James Pearman
-#include "Vex_Competition_Includes.c"   //Main competition background code...do not modify!
+#include "drive.c"
+#include "intake.c"						// Intake Library
+#include "flywheel.c"					// Flywheel Library
+#include "drive_selection.c"			// Drive Selection Code & Functions
+#include "autonomous_functions.c"		// Autonomous movement functions
+#include "CompIncludes.c"   			// Main competition background code
 
-//motorOFF const
-const int MotorOFF = 0;
+#define vexMotorOff 0
+#define vexMotorMax 127
+#define vexMotorMin -127
 
-//flywheel automatic speed control
-bool manualFlyWheelSpeedControl = false;
+#define MOTOR_FLYRIGHT1 rightf1
+#define MOTOR_FLYRIGHT2 rightf2
+#define MOTOR_FLYLEFT1 leftf1
+#define MOTOR_FLYLEFT2 leftf2
 
-//Flywheel Definitions
-//defined in initalizefLyWheel Task
+// Buttons to start & stop the flywheel withn the FlyTerminateSwitchTask
+#define TERMINATE_FLYWHEEL_BUTTON Btn5D
+#define START_FLYWHEEL_BUTTON Btn5U
 
-int speedVariableR;
-int speedVariableL;
+// Buttons to control the Loader and Intake going forward
+#define LOADER_BUTTON Btn6U
+#define INTAKE_BUTTON Btn6D
 
-int MaxSpeedR;
-int MaxSpeedL;
+// The Gear Ratio of your flywheel e.g. 27:1 would be 27 (for scaling)
+#define FlyGearRatio 27
 
-int StartSpeedR;
-int StartSpeedL;
+// Debug mode writes debug info to debug stream
+#define DEBUG_MODE false
 
-int IncremntRateR;
-int IncremntRateL;
+// The highest speed you want the flywheel to go
+int MaxSpeedR = 70;
+int MaxSpeedL = 70;
 
-bool flywheelRampActiveR;
-bool flywheelRampActiveL;
+// The highest speed you want the flywheel to go
+float EncoderTargetVelocityR = 2000;				// in RPMs
+float EncoderTargetVelocityL = 2000;
 
-//int used in ToggleFlywheelSpeed up & down as simple way of creating a toggle button
-int kNumbOfAttempts;
+// The Start Speed of the flywheel
+const int StartSpeedR 0
+const int StartSpeedL 0
 
-//run to initalize flywheel and reset values to default
-//*default values set here*
-task InitializeFlywheel
-{
-	//reset to automatic mode
-	manualFlyWheelSpeedControl = false;
-	
-	MaxSpeedR = 127;
-	MaxSpeedL = 127;
+// The ammout that the motor speed is increased each loop
+const int IncremntRateR = 1;
+const int IncremntRateL = 1;
 
-	StartSpeedR = 0;
-	StartSpeedL = 0;
-
-	// 1 will take 30 * 127 (maxspeed / IncremntRate)
-	// = 3800ish milisecs
-	IncremntRateR = 1;
-	IncremntRateL = 1;
-	
-	kNumbOfAttempts = 0;
-	
-	//dont hog cpu
-	EndTimeSlice();
-}
-
-//Flywheel Definitions End
-task flywheelRamp
-{
-	
-	//makes sure all flywheel values are default before starting
-	startTask(InitializeFlywheel);
-
-	while(true)
-	{
-		/// This code is over complicated and could be massivally simplified. ///
-		/// But I wanted to make sure your could ajust every aspect of the    ///
-		/// flywheel for fine tuning.					      ///
-		
-		// Both Sides of the flywheel are individualy controlled, because of this
-		// they can be individually finetuned, monitored and changed so you can
-		// get 'the perfect shot' every time. Its likely that encoders will be
-		// added below to make sure the wheels are at very similar speeds
-		// throughout the match
-
-		//Right Side Flywheel
-		motor[rightf1] = speedVariableR;
-		motor[rightf2] = speedVariableR;
-		wait1Msec(50);
-
-		if(speedVariableR < MaxSpeedR && manualFlyWheelSpeedControl == false)
-		{
-			//The 'Long' method shown here allows greater flexabillity wiht increment rates
-			speedVariableR = speedVariableR + IncremntRateR;		//set IncremntRateR to higher for faster ramp
-		}
-
-		//This code is far from perfect, but is designed so if you
-		//change the default speed starting varb the bool will still be activated :)
-		if(speedVariableR == 50) { flywheelRampActiveR = true; }
-		
-		//Left Side FLywheel
-		motor[leftf2] = speedVariableL;
-		motor[leftf1] = speedVariableL;
-
-		if(speedVariableL < MaxSpeedL && manualFlyWheelSpeedControl == false)
-		{
-			//The 'Long' method shown here allows greater flexabillity wiht increment rates
-			speedVariableL = speedVariableL + IncremntRateL;		//set IncrementRateL to higher for faster ramp
-		}
-		
-		if(speedVariableL == 50) { flywheelRampActiveL = true; }
-		wait1Msec(25);
-	}
-}
-
-// Terminates Flywheel immeadeatly 
-task flyWheelTerminate
-{
-	motor[rightf2] = MotorOFF;
-	motor[rightf1] = MotorOFF;
-	motor[leftf2] = MotorOFF;
-	motor[leftf1] = MotorOFF;
-	EndTimeSlice();
-}
-
-//Driver control task
-task TankDriveMovement
-{
-	while(true)
-	{
-		motor[leftd] = vexRT[Ch3];
-		motor[rightd] = vexRT[Ch2];
-		wait1Msec(20);
-	}
-}
-
-//Runs Feed
-void RunFeed(int speed)
-{
-	motor[feed] = -speed;
-}
 
 
 void pre_auton()
 {
-	//encoder initalization will occur here
+
+	SelectDriveTypeLCD();
+
 	bStopTasksBetweenModes = true;
 }
-///////////////////////////////////////////////////////////////////
+
+
 task autonomous()
 {
-	startTask(flywheelRamp);
-	
-	while(true)
-	{
-		//although this if statement only checks software motor speeds
-		if(speedVariableL == MaxSpeedL && speedVariableR == MaxSpeedR)
-		{
-			RunFeed(127);
-		}
-		//dont hog CPU
-		wait1Msec(30);
-	}
+	startTask(DisplayStatus, kLowPriority );
+	startTask(flywheelRamp, kHighPriority );
+
+	startTask(AutoRunFeeder);
 }
 
-//////////////////////////////////////////////////////////////////////////////////
+
 task usercontrol()
 {
+	CheckDriveType();
 
-	startTask(TankDriveMovement, 70);
-	
-	while (true)
-	{
-
-		//Start the ramp up flywheel
-		if(vexRT[Btn5U] == 1) { startTask(flywheelRamp, 80); }
-
-		//Termiante Switch, runs task which terminates flywheel and stops flywheelramp
-		if (vexRT[Btn5D] == 1)
-		{
-			startTask(flyWheelTerminate);
-			stopTask(flywheelRamp);
-		}
-		
-		// @warning UNFINISHED CODE, does not appear to work
-		
-		// The Two 'paragraphs' of code below are based of the idea of a toggle, the reason I did this is 
-		// I wanted to be able to move between several different states instead of simply incrasing or decreasing
-		// the speed of the flywheels. When encoders are intergrated this code will have to be ajusted.
-		// Could also add current ajustment!
-		
-		//Toggle FlywheelSpeed Up (will be reloaded by initalize)
-	//	if(vexRT[Btn8U] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 0)
-	//		{	kNumbOfAttempts ++; speedVariableL = 51; speedVariableR = 51;	manualFlyWheelSpeedControl = true;}
-	//	else if(vexRT[Btn8U] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 1)
-	//		{	kNumbOfAttempts ++; speedVariableL = 85; speedVariableR = 85;	manualFlyWheelSpeedControl = true;}
-	//	else if(vexRT[Btn8U] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 2)
-	//		{	kNumbOfAttempts ++; speedVariableL = 100; speedVariableR = 100;	manualFlyWheelSpeedControl = true;}
-	//	else if(vexRT[Btn8U] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 3)
-	//		{	kNumbOfAttempts = 0; speedVariableL = 127; speedVariableR = 127;	manualFlyWheelSpeedControl = true;}
-		
-		//Toggle FlywheelSpeed Down (will be reloaded by initalize)
-	//	if(vexRT[Btn8D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 0)
-	//		{	kNumbOfAttempts = 3; speedVariableL = 51; speedVariableR = 51; manualFlyWheelSpeedControl = true;}
-	//	else if(vexRT[Btn8D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 1)
-	//		{ kNumbOfAttempts --; speedVariableL = 85; speedVariableR = 85; manualFlyWheelSpeedControl = true;}
-	//	else if(vexRT[Btn8D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 2)
-	//		{	kNumbOfAttempts --; speedVariableL = 100; speedVariableR = 100; manualFlyWheelSpeedControl = true;}
-	//	else if(vexRT[Btn8D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true) && kNumbOfAttempts == 3)
-	//		{ kNumbOfAttempts --; speedVariableL = 127; speedVariableR = 127; manualFlyWheelSpeedControl = true;}
-	//	
-	//	// Now this code will ajust the speed of the flywheels in either direction for ever!
-	//	
-	//	//unlimited sideways flywheel ajustment Right
-	//	if(vexRT[Btn8R] == 1 && flywheelRampActiveL == true && flywheelRampActiveR == true)
-	//		{ speedVariableR = speedVariableR + 5; speedVariableL = speedVariableL - 5; manualFlyWheelSpeedControl = true;}
-	//	
-	//	//unlimited sideways flywheel ajustment Left
-	//	if(vexRT[Btn8L] == 1 && flywheelRampActiveL == true && flywheelRampActiveR == true)
-	//		{ speedVariableR = speedVariableR - 5; speedVariableL = speedVariableL + 5; manualFlyWheelSpeedControl = true;}
-	//
-	//	//this is a non initilazion quick motorspeed reset
-	//	//reset motorspeed to max
-	//	if(vexRT[Btn7D] == 1 && (flywheelRampActiveL == true || flywheelRampActiveR == true))
-	//		{	speedVariableL = MaxSpeedL; speedVariableR = MaxSpeedR;	kNumbOfAttempts = 0;}
-		
-		//condesned feed
-		if(vexRT[Btn6U] == 1) { motor[feed] = 127; }
-		else if(vexRT[Btn6D] == 1) { motor[feed] = -127; }
-		else { motor[feed] = 0; }
-		
-		wait1Msec(15);
-	}
+	startTask(flywheelRamp, kHighPriority );
+	startTask(FlyTerminateSwitch);
+	startTask(IntakeControls);
+	startTask(DisplayStatus, kLowPriority );
+		 
 }
