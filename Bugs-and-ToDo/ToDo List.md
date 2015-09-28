@@ -6,3 +6,4 @@ TODO:
   - ~~If encoded motors are at preset speed run feed!~~
   - Encoder implementation into flywheel control during autonomous and during match
   - Battery voltage based ajustment of flywheel speed
+  - Add Half Court Shots, and full court shots
