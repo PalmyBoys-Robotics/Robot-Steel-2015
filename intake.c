@@ -45,14 +45,14 @@
 void RunLoader(int speed)
 {
 	motor[loader] = -speed;
-	if(DEBUG_MODE == true) { writeDebugStreamLine("Loader Running at %a", speed) }
+	if(USER_DEBUG_MODE == true) { writeDebugStreamLine("Loader Running at %a", speed); }
 }
 
 // @about Intake at specified Speed
 void RunIntake(int speed)
 {
-	motor[intake] = speed:
-	if(DEBUG_MODE == true) { writeDebugStreamLine("Intake Running at %a", speed); }
+	motor[intake] = speed;
+	if(USER_DEBUG_MODE == true) { writeDebugStreamLine("Intake Running at %a", speed); }
 }
 
 // @about Task to control intakes
@@ -60,12 +60,12 @@ task IntakeControls
 {
 	while(true)
 	{
-	
+
 		if(vexRT[LOADER_BUTTON] == 1) { RunLoader(127); }
 		else { RunLoader(0); }
-		if(VexRT[INTAKE_BUTTON] == 1) { RunIntake(127); }
+		if(vexRT[INTAKE_BUTTON] == 1) { RunIntake(127); }
 		else { RunIntake(0); }
-		
+
 		wait1Msec(15);
 	}
 }

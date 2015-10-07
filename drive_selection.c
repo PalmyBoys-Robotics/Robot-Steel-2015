@@ -44,7 +44,7 @@
 const short leftButton = 1;
 const short centerButton = 2;
 const short rightButton = 4;
- 
+
 // @about Wait for Press
 void waitForPress()
 {
@@ -52,14 +52,14 @@ void waitForPress()
 	wait1Msec(5);
 }
 
- 
+
 // @about Wait for Release
 void waitForRelease()
 {
 	while(nLCDButtons != 0){}
 	wait1Msec(5);
 }
- 
+
 void SelectDriveTypeLCD()
 {
 	// Turn on backlight
@@ -67,13 +67,13 @@ void SelectDriveTypeLCD()
 
 	// Declare count variable to keep track of our choice
 	int count = 0;
-	 
+
 	// Clear LCD
 	clearLCDLine(0);
 	clearLCDLine(1);
 
 	// Loop while center button is not pressed
-	while(nLCDButtons != centerButton & bIfiRobotDisabled == true)
+	while(nLCDButtons != centerButton & bIfiRobotDisabled )
 	{
 		// Switch case that allows the user to choose from 4 different options
 		switch(count)
@@ -83,7 +83,7 @@ void SelectDriveTypeLCD()
 				displayLCDCenteredString(0, "Tank Drive");
 				displayLCDCenteredString(1, "<         Enter        >");
 				waitForPress();
-				
+
 				// Change between the two screens
 				if(nLCDButtons == leftButton)
 				{

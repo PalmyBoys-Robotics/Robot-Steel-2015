@@ -70,7 +70,7 @@ int getFlyRPML( int waitTime = 150 )
 
 	float EndCountL = SensorValue(leftEncoder);
 
-	float speedL = ((EndCountR - startCountR) / waitTime) * 60 * FlyGearRatio;
+	float speedL = ((EndCountL - startCountL) / waitTime) * 60 * FlyGearRatio;
 	return speedL;
 }
 
@@ -80,10 +80,10 @@ int getFlyRPMR( int waitTime = 150 )
 	float startCountR = SensorValue(rightEncoder);
 
 	wait1Msec(waitTime);
-		
+
 	float EndCountR = SensorValue(rightEncoder);
 
-	float speedR = ((EndCountL - startCountL) / waitTime) * 60 * FlyGearRatio;
+	float speedR = ((EndCountR - startCountR) / waitTime) * 60 * FlyGearRatio;
 	return speedR;
 }
 
@@ -93,6 +93,10 @@ void InitializeFlywheelVariables()
 	// The Starting speed of the flywheels
 	speedVariableR = StartSpeedR;
 	speedVariableL = StartSpeedL;
+
+	finishedL = false;
+	finishedR = false;
+
 }
 
 // @about Sets the speed of the flywheel
@@ -111,7 +115,7 @@ void flywheel_SetSpeedL( int speed )
 }
 
 // @about Flywheel ramp from startSpeed to MaxSpeed
-// @from written for Steel originally, but transfered to NifftyFlywheelLib.c
+// @warnig uses encoder counts defined in main document
 task flywheelRamp
 {
 
@@ -119,22 +123,90 @@ task flywheelRamp
 	{
 		// resets speedVariable
 		InitializeFlywheelVariables();
-	
+
 		while(true)
 		{
-	
-			// incremnt motor speed
-			if(speedVariableR < MaxSpeedR) { speedVariableR += IncremntRateR; }
-			if(speedVariableL < MaxSpeedL) { speedVariableL += IncremntRateL; }
-	
+
+			bool finishedL;
+			bool finishedR;
+
+			float errorVelocityR = EncoderTargetVelocityR - getFlyRPMR();
+			float errorVelocityL = EncoderTargetVelocityL - getFlyRPML();
+
+			float speed_write;
+
+			// if withn threshold finish*
+			if(errorVelocityR > (EncoderTargetVelocityR / 97) && errorVelocityR < (EncoderTargetVelocityR / 1.03) )
+			{
+				finishedR = true;
+			}
+
+			if(errorVelocityL > (EncoderTargetVelocityL / 97) && errorVelocityR < (EncoderTargetVelocityR / 1.03) )
+			{
+				finishedL = true;
+			}
+
+			// fine flywheel speed adjust back down
+			if(errorVelocityR > (EncoderTargetVelocityR) && (finishedR == false) )
+			{
+				speed_write = speedVariableR -= FineIncremntRateR;
+				flywheel_SetSpeedR(speed_write);
+			}
+
+			if(errorVelocityL > (EncoderTargetVelocityL) && (finishedL == false) )
+			{
+				speed_write = speedVariableL -= FineIncremntRateL;
+				flywheel_SetSpeedL(speed_write);
+			}
+
+			// fine flywheel speed adjust
+			if(errorVelocityR < (EncoderTargetVelocityR) && (finished == false) )
+			{
+				speed_write = speedVariableR += FineIncremntRateR;
+				flywheel_SetSpeedR(speed_write);
+			}
+
+			if(errorVelocityL < (EncoderTargetVelocityL) && (finished == false) )
+			{
+				speed_write = speedVariableL += FineIncremntRateL;
+				flywheel_SetSpeedL(speed_write);
+			}
+
+			// normal flywheel speed adjust
+			if(errorVelocityR < (EncoderTargetVelocityR / 1.3) && (errorVelocityR > (EncoderTargetVelocityR) / 1.1) )
+			{
+				speed_write = speedVariableR += NormalIncremntRateR;
+				flywheel_SetSpeedR(speed_write);
+			}
+
+			if(errorVelocityL < (EncoderTargetVelocityL / 1.3) && (errorVelocityL > (EncoderTargetVelocityL) / 1.1) )
+			{
+				speed_write = speedVariableL += NormalIncremntRateL;
+				flywheel_SetSpeedL(speed_write);
+			}
+
+			// Coarse FLywheel adjust (between /2 && /1.3)
+			if(errorVelocityR < (EncoderTargetVelocityR / 2) && (errorVelocityR > (EncoderTargetVelocityR) / 1.3) )
+			{
+				speed_write = speedVariableR += CoarseIncremntRateR;
+				flywheel_SetSpeedR(speed_write);
+			}
+
+			if(errorVelocityL < (EncoderTargetVelocityL / 2) && (errorVelocityL > (EncoderTargetVelocityL) / 1.3) )
+			{
+				speed_write = speedVariableL += CoarseIncremntRateL;
+				flywheel_SetSpeedL(speed_write);
+			}
+
 			flywheel_SetSpeedR(speedVariableR);
 			flywheel_SetSpeedL(speedVariableL);
 
 			checkVexMotorSpec(speedVariableL);
 			checkVexMotorSpec(speedVariableR);
 
-		//dont hog cpu
-		wait1Msec(75);
+			//dont hog cpu
+			wait1Msec(75);
+		}
 	}
 }
 
@@ -148,7 +220,7 @@ task FlyTerminateSwitch
 			flywheel_SetSpeedL(0);
 	    	flywheel_SetSpeedR(0);
 	    }
-	    
+
 	  	wait1Msec(50);
 	 }
 }
@@ -157,11 +229,10 @@ task AutoRunFeeder
 {
 	while(true)
 	{
-		if(getFlyRPMR() == EncoderTargetVelocityR) && (getFlyRPML() == EncoderTargetVelocityL)
+		if(getFlyRPMR() == EncoderTargetVelocityR && getFlyRPML() == EncoderTargetVelocityL)
 		{
 			RunIntake(127);
 			RunLoader(127);
 		}
 	}
 }
-

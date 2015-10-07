@@ -9,10 +9,6 @@
 // need to modify this program.
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if DEBUG_MODE == false
-#pragma systemFile            // eliminates warning for "unreferenced" functions
-#endif
-
 #include "FirmwareVersion.h"
 
 // local task for displaying status on the LCD display
@@ -83,11 +79,10 @@ task DisplayStatus()
 {
 	while(true)
     {
-    	string str;
 
 		clearLCDLine(0);
 		clearLCDLine(1);
-	        
+
 	    // Display timer on upper line
 		displayLCDPos(0, 11);
 	    displayNextLCDNumber(compTimer / 600, 2);
@@ -136,19 +131,4 @@ void allTasksStop()
   stopTask(18);
   stopTask(19);
 #endif
-}
-
-static void UserControlCodePlaceholderForTesting()
-{
-
-	wait1Msec(100);
-}
-
-static void AutonomousCodePlaceholderForTesting()
-{
-
-	while (true)
-	{
-		wait1Msec(100);
-	}
 }

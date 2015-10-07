@@ -11,6 +11,9 @@
 
 #pragma platform(VEX)
 #pragma competitionControl(Competition)
+#pragma systemFile            // eliminates warning for "unreferenced" functions
+
+#define USER_DEBUG_MODE false
 
 #include "drive.c"
 #include "intake.c"						// Intake Library
@@ -39,9 +42,6 @@
 // The Gear Ratio of your flywheel e.g. 27:1 would be 27 (for scaling)
 #define FlyGearRatio 27
 
-// Debug mode writes debug info to debug stream
-#define DEBUG_MODE false
-
 // The highest speed you want the flywheel to go
 int MaxSpeedR = 70;
 int MaxSpeedL = 70;
@@ -51,12 +51,16 @@ float EncoderTargetVelocityR = 2000;				// in RPMs
 float EncoderTargetVelocityL = 2000;
 
 // The Start Speed of the flywheel
-const int StartSpeedR 0
-const int StartSpeedL 0
+const float StartSpeedR = 15.5;
+const float StartSpeedL = 15.5;
 
-// The ammout that the motor speed is increased each loop
-const int IncremntRateR = 1;
-const int IncremntRateL = 1;
+//// The ammout that the motor speed is increased each loop
+//const float FineIncremntRateR = 0.5;
+//const float FineIncremntRateL = 0.5;
+//const float NormalIncremntRateR = 4;
+//const float NormalIncremntRateL = 4;
+//const float CoarseIncremntRateR = 7.5;
+//const float CoarseIncremntRateL = 7.5;
 
 
 
@@ -73,18 +77,18 @@ task autonomous()
 {
 	startTask(DisplayStatus, kLowPriority );
 	startTask(flywheelRamp, kHighPriority );
-
 	startTask(AutoRunFeeder);
 }
 
 
 task usercontrol()
 {
+	// Decides which drive to use
 	CheckDriveType();
 
 	startTask(flywheelRamp, kHighPriority );
 	startTask(FlyTerminateSwitch);
 	startTask(IntakeControls);
 	startTask(DisplayStatus, kLowPriority );
-		 
+
 }
