@@ -74,11 +74,11 @@ float velocityCalculator(int result1, int result2)
 void fw_CalculateVelocity()
 {
   // Temporary SensorValue Storage ( velocity measure 1/2 Left/Right)
-  float velocityM1L = SensorValue[rightEncoder];
-  float velocityM1R = SensorValue[leftEncoder];
+  float velocityM1L = rightEncoder;
+  float velocityM1R = leftEncoder;
   wait1Msec( velocityCalculationWaitTime );
-  float velocityM2L = SensorValue[rightEncoder];
-  float velocityM2R = SensorValue[leftEncoder];
+  float velocityM2L = rightEncoder;
+  float velocityM2R = leftEncoder;
 
   // Calucluates Velocity ( Measured in RPM )
   fwR.velocity = velocityCalculator(velocityM1R, velocityM2R);
@@ -88,12 +88,17 @@ void fw_CalculateVelocity()
 task fw_PIDController()
 {
 
-  // Clears encoders
-  SensorValue[ rightEncoder ] = 0;
-  SensorValue[ leftEncoder ] = 0;
+  // Clears encoder values
+	SensorValue[rightEncoder1] = 0;
+	SensorValue[rightEncoder2] = 0;
+	SensorValue[leftEncoder1] = 0;
+	SensorValue[leftEncoder2] = 0;
 
   while(true)
   {
+
+    // Averages the encoder values for more accuracy
+    AverageEncoderValues();
 
     // Calculates this iterations velocity
     fw_CalculateVelocity();
